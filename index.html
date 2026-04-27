@@ -1,0 +1,53 @@
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Email Checker</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 500px; margin: 80px auto; text-align: center; }
+    button { padding: 10px 24px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; }
+    button:disabled { background: #aaa; cursor: not-allowed; }
+    #status { margin-top: 16px; font-size: 14px; color: #555; }
+  </style>
+</head>
+<body>
+  <h2>📧 Email Checker</h2>
+  <input type="file" id="fileInput" accept=".xlsx" /><br><br>
+  <button id="btn" onclick="uploadFile()">Upload & Run</button>
+  <div id="status"></div>
+
+  <script>
+  const BACKEND = "http://localhost:3000";
+
+    async function uploadFile() {
+      const file = document.getElementById("fileInput").files[0];
+      if (!file) return alert("Please select a file!");
+
+      const btn = document.getElementById("btn");
+      btn.disabled = true;
+      document.getElementById("status").innerText = "⏳ Processing... please wait";
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const response = await fetch(`${BACKEND}/upload`, { method: "POST", body: formData });
+        if (!response.ok) throw new Error("Server error: " + response.status);
+
+        const blob = await response.blob();
+        const a    = document.createElement("a");
+        a.href     = URL.createObjectURL(blob);
+        a.download = "output_scrape.xlsx";
+        a.click();
+
+        document.getElementById("status").innerText = "✅ Done! File downloaded.";
+      } catch (err) {
+        document.getElementById("status").innerText = "❌ Error: " + err.message;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
